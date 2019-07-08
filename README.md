@@ -1,7 +1,7 @@
 # MaM2019
 
 Drivetrain:
-![Photo](/Pictures/drivetrain.jpg)
+![Photo](/Pictures/drivetrain.png)
 
 Mechanical parts:
 4x M3x10
