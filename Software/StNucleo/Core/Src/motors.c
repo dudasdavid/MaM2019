@@ -63,7 +63,7 @@ void motors_Init() {
 	//----- Init of the Powerstep01 library
 	/* Set the Powerstep01 library to use 1 device */
 	BSP_MotorControl_SetNbDevices(BSP_MOTOR_CONTROL_BOARD_ID_POWERSTEP01,
-			MOTOR_COUNT);
+	MOTOR_COUNT);
 	/* When BSP_MotorControl_Init is called with NULL pointer,                  */
 	/* the Powerstep01 registers are set with the predefined values from file   */
 	/* powerstep01_target_config.h, otherwise the registers are set using the   */
@@ -95,27 +95,6 @@ void motors_Init() {
 	}
 }
 
-void motors_Handler() {
-	for (int i = 0; i < MOTOR_COUNT; i++) {
-		Motor_t *motor = &motors[i];
-		if (motor->state == Controlling) {
-			BSP_MotorControl_CmdRun(i, FORWARD,
-					Powerstep01_Speed_Steps_s_to_RegVal(10));
-		} else if (motor->state == ManualMode) {
-			uint16_t potiValue = 0; // todo communication
-			if (potiValue < 100) {
-				potiValue = 0;
-				BSP_MotorControl_CmdSoftHiZ(i);
-			} else {
-				BSP_MotorControl_CmdRun(i, FORWARD,
-						Powerstep01_Speed_Steps_s_to_RegVal(potiValue / 4));
-			}
-		} else if (motor->state == Idle) {
-			BSP_MotorControl_CmdSoftHiZ(i);
-		}
-	}
-}
-
 /**
  * @brief  This function is the User handler for the flag interrupt
  * @param  None
@@ -133,14 +112,6 @@ void MyFlagInterruptHandler(void) {
 		}
 	}
 
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	switch (GPIO_Pin) {
-	case BSP_MOTOR_CONTROL_BOARD_FLAG_Pin:
-		 BSP_MotorControl_FlagInterruptHandler();
-		break;
-	}
 }
 
 /**

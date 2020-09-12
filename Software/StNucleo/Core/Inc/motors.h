@@ -35,7 +35,6 @@
 
 typedef enum MotorState {
   Idle,
-  Controlling,
   ManualMode
 } MotorState_t;
 
@@ -48,7 +47,7 @@ typedef struct Motor {
   MotorState_t prevState;
 } Motor_t;
 
+Motor_t motors[MOTOR_COUNT];
 void motors_Init();
-void motors_Handler();
 
 #endif /* MOTORS_H_ */
