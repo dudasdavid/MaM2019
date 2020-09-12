@@ -471,8 +471,8 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN Header_DefaultTask */
 static uint8_t receiveBuffer;
 
-static volatile float referenceSpeed = 0.0f;
-static volatile float referenceAngle = 0.0f;
+static volatile uint8_t referenceSpeed = 150; // 127 +/- 127, raw value
+static volatile uint8_t referenceAngle = 0;
 static volatile uint8_t buttonState = 0;
 static uint8_t messageCounter = 0xFF;
 
@@ -495,8 +495,8 @@ static bool process_message(const uint8_t message[4]) {
 		//referenceSpeedOrig = receiveBuffer[1] / 10.0;
 		//referenceSpeed = calcSpdRef_LUT(referenceSpeedOrig);
 		if (osMutexAcquire(paramUpdateMutexHandle, 100) == osOK) {
-			referenceSpeed = message[0] * 2.0f;
-			referenceAngle = message[1] * 2.0f;
+			referenceSpeed = message[0];
+			referenceAngle = message[1];
 			buttonState = message[2];
 			messageCounter = message[3];
 			osMutexRelease(paramUpdateMutexHandle);
