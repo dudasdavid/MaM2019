@@ -544,7 +544,7 @@ __weak void DefaultTask(void *argument)
 		if ((HAL_GetTick() - lastMessageReceived) > 1000) {
 			// 1s timeout
 			for (int i = 0; i < MOTOR_COUNT; i++) {
-				motors[i].state = Idle;
+				//motors[i].state = Idle;
 			}
 		}
 
@@ -604,11 +604,14 @@ static void rphi2lr(uint8_t r, uint8_t phi, float *left, float *right) {
 
 static void set_motor_speed(uint8_t id, float speed) {
 	if (motors[id].state == ManualMode) {
-		if (speed < RPM_TO_STEP_P_S(1.0f)) {
+		if (fabsf(speed) < RPM_TO_STEP_P_S(1.0f)) {
 			BSP_MotorControl_CmdSoftHiZ(id);
-		} else {
+		} else if (speed > 0) {
 			BSP_MotorControl_CmdRun(id, FORWARD,
 					Powerstep01_Speed_Steps_s_to_RegVal(speed));
+		} else {
+			BSP_MotorControl_CmdRun(id, BACKWARD,
+					Powerstep01_Speed_Steps_s_to_RegVal(fabsf(speed)));
 		}
 	} else {
 		BSP_MotorControl_CmdSoftHiZ(id);
@@ -626,6 +629,11 @@ __weak void MotorTask(void *argument)
   /* USER CODE BEGIN MotorTask */
 	motors_Init();
 
+	// TODO debug only, by default motors should be idle
+	for (int i = 0; i < MOTOR_COUNT; i++) {
+		motors[i].state = ManualMode;
+	}
+
 	/* Infinite loop */
 	for (;;) {
 		if (osMutexAcquire(paramUpdateMutexHandle, 10) == osOK) {
@@ -635,7 +643,7 @@ __weak void MotorTask(void *argument)
 			osMutexRelease(paramUpdateMutexHandle);
 
 			set_motor_speed(0, left);
-			set_motor_speed(1, right);
+			set_motor_speed(1, -1.0f * right);
 		}
 		osDelay(10);
 	}
