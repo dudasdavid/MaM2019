@@ -325,6 +325,10 @@ void Powerstep01_Init(void* pInit)
   
   /* Let a delay after reset */
   Powerstep01_Board_Delay(1);
+  Powerstep01_CmdSoftHiZ(powerstep01DriverInstance);
+  Powerstep01_CmdSoftStop(powerstep01DriverInstance);
+  Powerstep01_CmdHardHiZ(powerstep01DriverInstance);
+  Powerstep01_CmdHardStop(powerstep01DriverInstance);
 
   if (pInit == 0)
   {
@@ -337,7 +341,10 @@ void Powerstep01_Init(void* pInit)
   }
   
   // Put the Powerstep01 in HiZ state
+  Powerstep01_CmdSoftHiZ(powerstep01DriverInstance);
+  Powerstep01_CmdSoftStop(powerstep01DriverInstance);
   Powerstep01_CmdHardHiZ(powerstep01DriverInstance);
+  Powerstep01_CmdHardStop(powerstep01DriverInstance);
   
   Powerstep01_FetchAndClearAllStatus();
   
