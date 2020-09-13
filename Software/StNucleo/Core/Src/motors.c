@@ -21,7 +21,7 @@ union powerstep01_Init_u initDeviceParameters = {
 		RPM_TO_STEP_P_S(MOTOR_MAX_SPEED_RPM*2), // Full step speed in step/s, range 7.63 to 15625 steps/s
 		POWERSTEP01_BOOST_MODE_OFF, // Boost of the amplitude square wave, enum powerstep01_BoostMode_t
 		281.25, // Overcurrent threshold settings via enum powerstep01_OcdTh_t
-		STEP_MODE_1_16, // Step mode settings via enum motorStepMode_t
+		STEP_MODE_FULL, // Step mode settings via enum motorStepMode_t
 		POWERSTEP01_SYNC_SEL_DISABLED, // Synch. Mode settings via enum powerstep01_SyncSel_t
 		(POWERSTEP01_ALARM_EN_OVERCURRENT
 				| POWERSTEP01_ALARM_EN_THERMAL_SHUTDOWN
