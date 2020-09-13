@@ -16,10 +16,10 @@ byte enaPin = 8;
 int numberOfSteps = 2000;
 
 //byte ledPin = 13;
-int pulseWidthMicros = 100;  // microseconds
-int microsBetweenSteps = 1000; // microseconds
+int pulseWidthMicros = 100000;  // microseconds
+int microsBetweenSteps = 100000; // microseconds
 
-int selectedMotor = 3;
+int selectedMotor = 2;
 
 void setup() 
 { 
