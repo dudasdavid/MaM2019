@@ -56,7 +56,7 @@ SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim1;
 
-UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -96,9 +96,9 @@ const osMutexAttr_t paramUpdateMutex_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART1_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_USART2_UART_Init(void);
 void DefaultTask(void *argument);
 void ServoTask(void *argument);
 void MotorTask(void *argument);
@@ -140,9 +140,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART1_UART_Init();
   MX_SPI1_Init();
   MX_TIM1_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -367,35 +367,35 @@ static void MX_TIM1_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
+  * @brief USART2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART1_UART_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
-  /* USER CODE BEGIN USART1_Init 0 */
+  /* USER CODE BEGIN USART2_Init 0 */
 
-  /* USER CODE END USART1_Init 0 */
+  /* USER CODE END USART2_Init 0 */
 
-  /* USER CODE BEGIN USART1_Init 1 */
+  /* USER CODE BEGIN USART2_Init 1 */
 
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 9600;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART1_Init 2 */
+  /* USER CODE BEGIN USART2_Init 2 */
 
-  /* USER CODE END USART1_Init 2 */
+  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -414,7 +414,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SERVO_EN_GPIO_Port, SERVO_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, SERVO_EN_Pin|BSP_MOTOR_CONTROL_BOARD_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(BSP_MOTOR_CONTROL_BOARD_STEP_CLOCK_GPIO_Port, BSP_MOTOR_CONTROL_BOARD_STEP_CLOCK_Pin, GPIO_PIN_RESET);
@@ -455,6 +455,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(BSP_MOTOR_CONTROL_BOARD_BUSY_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : BSP_MOTOR_CONTROL_BOARD_CS_Pin */
+  GPIO_InitStruct.Pin = BSP_MOTOR_CONTROL_BOARD_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(BSP_MOTOR_CONTROL_BOARD_CS_GPIO_Port, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
@@ -477,12 +484,16 @@ static volatile uint8_t buttonState = 0;
 static uint8_t messageCounter = 0xFF;
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	osMessageQueuePut(commBufferHandle, &receiveBuffer, 0, 0);
-	HAL_UART_Receive_IT(huart, &receiveBuffer, 1u);
+	if (huart->Instance == USART2) {
+		osMessageQueuePut(commBufferHandle, &receiveBuffer, 0, 0);
+		HAL_UART_Receive_IT(huart, &receiveBuffer, 1u);
+	}
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-	HAL_UART_Receive_IT(huart, &receiveBuffer, 1u);
+	if (huart->Instance == USART2) {
+		HAL_UART_Receive_IT(huart, &receiveBuffer, 1u);
+	}
 }
 
 static bool process_message(const uint8_t message[4]) {
@@ -520,7 +531,7 @@ __weak void DefaultTask(void *argument)
 	uint8_t message[5] = { 0 };
 	uint32_t lastMessageReceived = HAL_GetTick();
 
-	HAL_UART_Receive_IT(&huart1, &receiveBuffer, 1u);
+	HAL_UART_Receive_IT(&huart2, &receiveBuffer, 1u);
 	/* Infinite loop */
 	for (;;) {
 		if (osMessageQueueGetCount(commBufferHandle) >= 5) {
