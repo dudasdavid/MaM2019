@@ -559,7 +559,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN Header_DefaultTask */
 static uint8_t receiveBuffer;
 
-static volatile uint8_t referenceSpeed = 150; // 127 +/- 127, raw value
+static volatile uint8_t referenceSpeed = 127; // 127 +/- 127, raw value
 static volatile uint8_t referenceAngle = 0;
 static volatile uint8_t buttonState = 0;
 static uint8_t messageCounter = 0xFF;
@@ -634,7 +634,7 @@ __weak void DefaultTask(void *argument)
 		if ((HAL_GetTick() - lastMessageReceived) > 1000) {
 			// 1s timeout
 			for (int i = 0; i < MOTOR_COUNT; i++) {
-				//motors[i].state = Idle;
+				motors[i].state = Idle;
 			}
 		}
 
@@ -676,17 +676,17 @@ static float clip(float a, float min, float max) {
 }
 
 static float normalize(uint8_t x) {
-	return clip((x - 127) / 127.0, -1.0, 1.0);
+	return clip(x / 100.0, 0.0, 1.0);
 }
 
 static void rphi2lr(uint8_t r, uint8_t phi, float *left, float *right) {
-#define SPEED_GAIN RPM_TO_STEP_P_S(100.0f)
+#define SPEED_GAIN RPM_TO_STEP_P_S(300.0f)
 
 	float rf = normalize(r);
-	float phif = phi * 2 * M_PI / 180.0f;
+	float phif = (2 * phi - 90.0f) * M_PI / 180.0f;
 
-	float v = rf * cosf(phif) * 0.75f;
-	float w = rf * sinf(phif) * 0.25f;
+	float v = rf * cosf(phif) * 0.5f;
+	float w = rf * sinf(phif) * 0.5f;
 
 	*left = (v + w) * SPEED_GAIN;
 	*right = (v - w) * SPEED_GAIN;
@@ -719,9 +719,8 @@ __weak void MotorTask(void *argument)
   /* USER CODE BEGIN MotorTask */
 	motors_Init();
 
-	// TODO debug only, by default motors should be idle
 	for (int i = 0; i < MOTOR_COUNT; i++) {
-		motors[i].state = ManualMode;
+		motors[i].state = Idle;
 	}
 
 	/* Infinite loop */
@@ -732,8 +731,8 @@ __weak void MotorTask(void *argument)
 			rphi2lr(referenceSpeed, referenceAngle, &left, &right);
 			osMutexRelease(paramUpdateMutexHandle);
 
-			set_motor_speed(0, left);
-			set_motor_speed(1, -1.0f * right);
+			set_motor_speed(0, -1.0f * left);
+			set_motor_speed(1, right);
 		}
 		osDelay(10);
 	}

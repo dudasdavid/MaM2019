@@ -13,8 +13,8 @@ static volatile uint16_t gLastError;
 union powerstep01_Init_u initDeviceParameters = {
 /* common parameters */
 .cm.cp.cmVmSelection = POWERSTEP01_CM_VM_CURRENT, // enum powerstep01_CmVm_t
-		59580, // Acceleration rate in step/s2, range 14.55 to 59590 steps/s^2
-		59580, // Deceleration rate in step/s2, range 14.55 to 59590 steps/s^2
+		5959, // Acceleration rate in step/s2, range 14.55 to 59590 steps/s^2
+		5959, // Deceleration rate in step/s2, range 14.55 to 59590 steps/s^2
 		RPM_TO_STEP_P_S(MOTOR_MAX_SPEED_RPM), // Maximum speed in step/s, range 15.25 to 15610 steps/s
 		0, // Minimum speed in step/s, range 0 to 976.3 steps/s
 		POWERSTEP01_LSPD_OPT_OFF, // Low speed optimization bit, enum powerstep01_LspdOpt_t
