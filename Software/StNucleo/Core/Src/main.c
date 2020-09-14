@@ -132,7 +132,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  uwTickPrio = 15;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -608,7 +608,9 @@ __weak void DefaultTask(void *argument)
 	uint8_t message[5] = { 0 };
 	uint32_t lastMessageReceived = HAL_GetTick();
 
-	HAL_UART_Receive_IT(&huart2, &receiveBuffer, 1u);
+	HAL_StatusTypeDef result = HAL_UART_Receive_IT(&huart2, &receiveBuffer, 1u);
+	assert_param(result == HAL_OK);
+
 	/* Infinite loop */
 	for (;;) {
 		if (osMessageQueueGetCount(commBufferHandle) >= 5) {
