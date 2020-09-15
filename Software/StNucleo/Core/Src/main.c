@@ -92,7 +92,9 @@ const osMutexAttr_t paramUpdateMutex_attributes = {
   .name = "paramUpdateMutex"
 };
 /* USER CODE BEGIN PV */
-
+static float drumAngle = 7.5f;
+static float liftAngle = 7.5f;
+static float ejector = 7.5f;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -155,9 +157,10 @@ int main(void)
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
 
-  TIM1->CCR1 = 10*10000/100;
-  TIM4->CCR3 = 20*10000/100;
-  TIM4->CCR4 = 30*10000/100;
+  TIM1->CCR1 = 7.5*10000/100; // drum
+  TIM4->CCR3 = 7.5*10000/100; // lift
+  TIM4->CCR4 = 7.5*10000/100; // ejector
+  // 50Hz --> 20ms; 1ms ... 2ms --> 5% ... 10%
 
   /* USER CODE END 2 */
 
@@ -559,7 +562,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN Header_DefaultTask */
 static uint8_t receiveBuffer;
 
-static volatile uint8_t referenceSpeed = 127; // 127 +/- 127, raw value
+static volatile uint8_t referenceSpeed = 0;
 static volatile uint8_t referenceAngle = 0;
 static volatile uint8_t buttonState = 0;
 static uint8_t messageCounter = 0xFF;
@@ -657,7 +660,10 @@ __weak void ServoTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		osDelay(1);
+		TIM1->CCR1 = drumAngle*10000/100; // drum 2.5...11.5
+		TIM4->CCR3 = liftAngle*10000/100; // lift 3.0 down, 12 full top for start, 8 for eject
+		TIM4->CCR4 = ejector*10000/100; // ejector
+		osDelay(10);
 	}
   /* USER CODE END ServoTask */
 }
