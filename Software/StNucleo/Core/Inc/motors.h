@@ -21,7 +21,9 @@
 #endif
 
 #define MOTOR_COUNT 2
-#define MOTOR_MAX_SPEED_RPM 600
+//todo: check max speed
+#define MOTOR_MAX_SPEED_RPM 2000
+#define FULL_STEP_SPEED_RPM 100
 
 #define MOTOR_MIN_ANGLE_DEG 0
 #define MOTOR_MAX_ANGLE_DEG 90
