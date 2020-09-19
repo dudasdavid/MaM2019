@@ -32,13 +32,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct {
-	uint16_t start;
-	int16_t steer;
-	int16_t speed;
-	uint16_t checksum;
-} SerialCommand;
-SerialCommand Command;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
