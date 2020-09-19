@@ -151,9 +151,9 @@ int main(void)
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
 
-  TIM1->CCR1 = 7.5*10000/100; // drum
-  TIM4->CCR3 = 7.5*10000/100; // lift
-  TIM4->CCR4 = 7.5*10000/100; // ejector
+  //TIM1->CCR1 = drumAngle*10000/100; // drum
+  //TIM4->CCR3 = liftAngle*10000/100; // lift
+  //TIM4->CCR4 = ejector*10000/100;   // ejector
   // 50Hz --> 20ms; 1ms ... 2ms --> 5% ... 10%
 
   /* USER CODE END 2 */
@@ -719,10 +719,10 @@ __weak void ServoTask(void *argument)
 			}
 		}
 
-
+		// Set PWM duty cycles
 		TIM1->CCR1 = drumAngle*10000/100; // drum 2.5...11.5
 		TIM4->CCR3 = liftAngle*10000/100; // lift 3.0 down, 12 full top for start, 8 for eject
-		TIM4->CCR4 = ejector*10000/100; // ejector
+		TIM4->CCR4 = ejector*10000/100;   // ejector
 		osDelay(20);
 	}
   /* USER CODE END ServoTask */
