@@ -92,9 +92,9 @@ const osMutexAttr_t paramUpdateMutex_attributes = {
   .name = "paramUpdateMutex"
 };
 /* USER CODE BEGIN PV */
-static float drumAngle = 7.5f;
-static float liftAngle = 7.5f;
-static float ejector = 7.5f;
+static float drumAngle = 11.5f; //end
+static float liftAngle = 12.f;   //full up position
+static float ejector = 6.6f;    //closed
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
