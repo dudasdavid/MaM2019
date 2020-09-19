@@ -647,23 +647,6 @@ __weak void DefaultTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_ServoTask */
-__weak void ServoTask(void *argument)
-{
-  /* USER CODE BEGIN ServoTask */
-	HAL_GPIO_WritePin(SERVO_EN_GPIO_Port, SERVO_EN_Pin, GPIO_PIN_SET);
-
-	/* Infinite loop */
-	for (;;) {
-		TIM1->CCR1 = drumAngle*10000/100; // drum 2.5...11.5
-		TIM4->CCR3 = liftAngle*10000/100; // lift 3.0 down, 12 full top for start, 8 for eject
-		TIM4->CCR4 = ejector*10000/100; // ejector
-		osDelay(10);
-	}
-  /* USER CODE END ServoTask */
-}
-
-/* USER CODE BEGIN Header_MotorTask */
-
 static float clip(float a, float min, float max) {
 	if (a < min) {
 		return min;
@@ -678,6 +661,74 @@ static float clip(float a, float min, float max) {
 static float normalize(uint8_t x) {
 	return clip(x / 100.0, 0.0, 1.0);
 }
+
+__weak void ServoTask(void *argument)
+{
+  /* USER CODE BEGIN ServoTask */
+	HAL_GPIO_WritePin(SERVO_EN_GPIO_Port, SERVO_EN_Pin, GPIO_PIN_SET);
+	bool isStarted = false;
+	bool rotateFlag = false;
+	float timeStamp = 0.f;
+	int phase = 0;
+
+	/* Infinite loop */
+	for (;;) {
+
+		// Handle faszika ejector
+		if (buttonState & 0x01){
+			ejector = 5.f;
+		}
+		else {
+			ejector = 6.6f;
+		}
+
+		// Handle sample collection
+		if (buttonState & 0x02){
+			liftAngle = 3.f;
+			isStarted = true;
+			rotateFlag = true;
+		}
+		else {
+			if (isStarted){
+				liftAngle = 8.f;
+			}
+
+			if (rotateFlag) {
+				rotateFlag = false;
+				drumAngle = drumAngle - 0.9f; // 0.9 is the angle increment!
+				drumAngle = clip(drumAngle, 2.5f, 11.5f);
+			}
+
+		}
+
+		// Handle sample eject
+		if (buttonState & 0x04){
+			liftAngle = 8.f;
+			if (HAL_GetTick() - timeStamp > 500){
+				timeStamp = HAL_GetTick();
+				if (phase % 2 == 0){
+					drumAngle = drumAngle + 1.5;
+				}
+				else {
+					drumAngle = drumAngle - 0.8;
+				}
+
+				drumAngle = clip(drumAngle, 2.5f, 11.5f);
+
+				phase++;
+			}
+		}
+
+
+		TIM1->CCR1 = drumAngle*10000/100; // drum 2.5...11.5
+		TIM4->CCR3 = liftAngle*10000/100; // lift 3.0 down, 12 full top for start, 8 for eject
+		TIM4->CCR4 = ejector*10000/100; // ejector
+		osDelay(20);
+	}
+  /* USER CODE END ServoTask */
+}
+
+/* USER CODE BEGIN Header_MotorTask */
 
 static void rphi2lr(uint8_t r, uint8_t phi, float *left, float *right) {
 #define SPEED_GAIN RPM_TO_STEP_P_S(300.0f)
