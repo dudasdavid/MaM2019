@@ -731,7 +731,7 @@ __weak void ServoTask(void *argument)
 /* USER CODE BEGIN Header_MotorTask */
 
 static void rphi2lr(uint8_t r, uint8_t phi, float *left, float *right) {
-#define SPEED_GAIN RPM_TO_STEP_P_S(300.0f)
+#define SPEED_GAIN RPM_TO_STEP_P_S(400.0f)
 
 	float rf = normalize(r);
 	float phif = (2 * phi - 90.0f) * M_PI / 180.0f;
